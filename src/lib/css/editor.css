@@ -1,0 +1,67 @@
+    .markdown-editor {
+    display: flex;
+    justify-content: space-between;
+    box-sizing: border-box;
+	height: 100%;
+	}
+
+	.markdown-editor__panel {
+	    width: calc(50% - 1rem);
+	    box-sizing: inherit;
+	}
+
+	.markdown-editor__panel__label {
+	    display: block;
+	    font-weight: 700;
+	    margin-bottom: 0.75rem;
+	}
+
+	.markdown-editor__textarea, .markdown-editor__result-html {
+	    box-sizing: inherit;
+	    height: 100%;
+	    width: 100%;
+	    padding: 1rem;
+	    border: 1px solid white;
+	}
+
+	.markdown-editor__textarea {
+	    margin: 0;
+        resize: none;
+		font-weight: 500;
+		font-size: large;
+	}
+
+	.markdown-editor__result-html {
+	    overflow-y: scroll;
+		margin: 0;
+	}
+
+	.markdown-editor__result-html li {
+		margin: 1rem;
+	}
+	.markdown-editor__result-html ul {
+		margin-left: 1rem;
+	}
+
+	.markdown-editor__result-html sup, sub{
+		margin: 0;
+		padding: 0;
+  	}
+
+	.hljs span {
+		margin: 0;
+		padding: 0;
+	}
+
+	.markdown-editor__result-html blockquote {
+  		background: #11151b;
+        padding: 0.5em;
+  		font-weight: normal;
+  		border-radius: 5px;
+        border-left: 8px solid #222d3d;
+	}
+
+    .markdown-editor__result-html blockquote > p {
+        margin: 0;
+        padding: 0;
+    }
