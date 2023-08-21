@@ -56,6 +56,7 @@
 		border: 1px solid #3f3f3f;
 		filter: drop-shadow(5px 5px 10px rgb(0 0 0 / 0.4));
 		padding: 1rem;
+		z-index: 99999;
 	}
 	.bottom-group {
 		position: absolute;
