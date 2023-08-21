@@ -16,7 +16,8 @@
     "build:electron": "electron-builder -mwl --config build.config.json",
     "start": "concurrently -n=svelte,electron -c='#ff3e00',blue \"npm run dev:svelte\" \"electron-forge start\"",
     "package": "electron-forge package",
-    "make": "electron-forge make"
+    "make": "electron-forge make",
+    "preview": "vite preview"
   },
   "engines": {
     "npm": ">=7",

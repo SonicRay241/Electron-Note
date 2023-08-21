@@ -16,7 +16,7 @@ try {
 	console.error(e);
 }
 
-const serveURL = serve({ directory: './build/index.html' });
+const serveURL = serve({ directory: './build' });
 const port = process.env.PORT || 5173;
 const dev = !app.isPackaged;
 /** @type {import('electron').BrowserWindow} */
