@@ -1,32 +1,37 @@
 <script lang="ts">
 	import '@fontsource/montserrat';
-	import { fade } from 'svelte/transition';
 	import { onMount } from 'svelte';
 	import '$lib/css/app.css';
 	import { Toaster } from 'svelte-french-toast';
+	import { VERSION } from '@sveltejs/kit';
+	import { version } from '$app/environment';
 
 	onMount(() => {
 		window.electron.send('readAppData', null);
 	});
 
-	export let data;
+	let data = '';
+
+	onMount(() => {
+		data = location.pathname;
+	});
 </script>
 
 <Toaster containerStyle="margin-top: 40px" />
-{#if data.url != '/new'}
+{#if data != '/new'}
 	<div class="bar">
 		<!-- <div class="title">
 			<p>Livre</p>
 		</div> -->
 	</div>
 {/if}
-{#key data.url}
-	<div class="screen-window" transition:fade>
+{#key data}
+	<div class="screen-window">
 		<slot />
 	</div>
 {/key}
 <div class="dev-tag">
-	<p>ALPHA</p>
+	<p>ALPHA v0.0.1</p>
 </div>
 
 <style>

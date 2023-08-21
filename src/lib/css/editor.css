@@ -17,11 +17,14 @@
 	}
 
 	.markdown-editor__textarea, .markdown-editor__result-html {
-	    box-sizing: inherit;
-	    height: 100%;
+	    box-sizing: border-box;
+	    height: max-content;
 	    width: 100%;
-	    padding: 1rem;
-	    border: 1px solid white;
+		
+	    /* padding: 1rem; */
+	    border: none;
+		padding-bottom: 1rem;
+	    /* border: 1px solid white; */
 	}
 
 	.markdown-editor__textarea {
@@ -32,14 +35,24 @@
 	}
 
 	.markdown-editor__result-html {
-	    overflow-y: scroll;
 		margin: 0;
 	}
 
+	.markdown-editor__result-html pre {
+		white-space: normal;
+	}
+
+	.markdown-editor__result-html img {
+		max-width: 75%;
+		height: fit-content;
+	}
+
 	.markdown-editor__result-html li {
+		display: list-item;
 		margin: 1rem;
 	}
 	.markdown-editor__result-html ul {
+		margin: 0;
 		margin-left: 1rem;
 	}
 

@@ -1,34 +1,32 @@
 <script lang="ts">
+	export let os: string;
 	let evt: WheelEvent = new WheelEvent('wheel', { bubbles: true, cancelable: true, deltaX: 134 });
 	let tabWrapper: HTMLElement;
 
-	export let moveTab = () => {
-		tabWrapper.dispatchEvent(evt);
-		console.log('a');
-	};
+	let width = 'width: calc(100vw - 12rem - 127px);';
+
+	if (os == 'darwin') {
+		width = 'width: calc(100vw - 12rem + 4px)';
+	}
 </script>
 
 <div class="wholewrapper">
-	<div
-		class="tabwrapper"
-		on:wheel={(e) => {
-			e.preventDefault();
-			e.currentTarget.scrollLeft += e.deltaY + e.deltaX;
-		}}
-		bind:this={tabWrapper}
-	>
+	<div class="tabwrapper" style={width} bind:this={tabWrapper}>
 		<div class="tabs" style="">
 			<slot />
 		</div>
 	</div>
-	<div class="draggybit" />
+	{#if os != 'darwin'}
+		<div class="draggybit" />
+	{/if}
 </div>
 
 <style>
 	.draggybit {
 		-webkit-app-region: drag;
 		width: 137px;
-		background-color: #0d1117;
+		/* background-color: #1f2329; */
+		background-color: transparent;
 		/* border-left: 1px solid #283241; */
 		/* border-bottom: 1px solid #283241; */
 	}
@@ -44,9 +42,11 @@
 		-webkit-app-region: no-drag;
 	}
 	.tabwrapper {
-		overflow-x: hidden;
+		overflow-x: scroll;
 		overflow-y: hidden;
-		background-color: #0d1117;
-		width: calc(100vw - 12rem - 127px);
+		background-color: transparent;
+	}
+	::-webkit-scrollbar {
+		display: none;
 	}
 </style>

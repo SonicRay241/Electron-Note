@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import Spacer from '$lib/components/Spacer.svelte';
+	import { goto } from '$app/navigation';
 
 	let innerHeight: number = 0;
 	let createFile: () => void;
@@ -24,34 +25,10 @@
 		openFile = () => {
 			window.electron.send('openFile', null);
 		};
-		function postData(path: string, params: any, method: 'POST' | 'GET') {
-			// Create form
-			const hidden_form = document.createElement('form');
-
-			// Set method to post by default
-			hidden_form.method = method || 'POST';
-
-			// Set path
-			hidden_form.action = path;
-
-			for (const key in params) {
-				if (params.hasOwnProperty(key)) {
-					const hidden_input = document.createElement('input');
-					hidden_input.type = 'hidden';
-					hidden_input.name = key;
-					hidden_input.value = params[key];
-
-					hidden_form.appendChild(hidden_input);
-				}
-			}
-
-			document.body.appendChild(hidden_form);
-			hidden_form.submit();
-		}
 		window.setInterval(function () {
 			if (a.data != '') {
 				if (a.data != null) {
-					postData('?/moveToApp', { data: 0 }, 'POST');
+					goto('/app');
 				}
 			}
 		}, 200);
@@ -135,6 +112,9 @@
 		cursor: pointer;
 	}
 	.selector-button:hover {
-		background-color: #161d27;
+		background-color: #6b22bf;
+	}
+	.selector-button:hover svg path {
+		fill: white;
 	}
 </style>

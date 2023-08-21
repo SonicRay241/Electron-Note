@@ -14,13 +14,12 @@ type Book = {
 
 type Library = {
     data: Book[]
-    recent: string[]
-    favorites: string[]
 }
 
 type MainData = {
     path: string | null
     data: Library | null
+    os: 'aix' | 'darwin' | 'freebsd' | 'linux' | 'openbsd' | 'sunos' | 'win32'
 }
 
 export type { Note, Book, Library, MainData }

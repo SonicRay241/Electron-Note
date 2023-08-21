@@ -4,11 +4,11 @@
 	export let close: () => void;
 	export let open: () => void;
 
-	let style = 'background-color: #12171f;';
+	let style = 'background-color: #202020;';
 	let color = 'ffffff';
 
 	if (!selected) {
-		style = 'background-color: #0d1117;';
+		style = 'background-color: #0d111700;';
 		color = 'a0a0a0';
 	}
 </script>
@@ -17,12 +17,12 @@
 	class="tab-wrapper"
 	on:mouseenter={() => {
 		if (!selected) {
-			style = 'background-color: #12171f';
+			style = 'background-color: #202020';
 		}
 	}}
 	on:mouseleave={() => {
 		if (!selected) {
-			style = 'background-color: #0d1117;';
+			style = 'background-color: #0d111700;';
 		}
 	}}
 >
@@ -67,11 +67,11 @@
 	.justamargin {
 		width: 0.5rem;
 	}
-	.curve {
+	/* .curve::before {
 		background-color: #12171f;
 		height: 100%;
 		width: 0.5rem;
-	}
+	} */
 	.tab-wrapper {
 		display: flex;
 		padding-top: 5px;
@@ -79,14 +79,16 @@
 	.start-flipped {
 		height: 100%;
 		width: 0.5rem;
-		background-color: #0d1117;
+		background-color: transparent;
 		border-radius: 0px 0px 0.5rem 0px;
+		box-shadow: 5px 8px 0 3px var(--editor-background);
 	}
 	.end-flipped {
 		height: 100%;
 		width: 0.5rem;
-		background-color: #0d1117;
+		background-color: transparent;
 		border-radius: 0px 0px 0px 0.5rem;
+		box-shadow: -5px 8px 0 3px var(--editor-background);
 	}
 	span {
 		font-size: 15px;
@@ -118,6 +120,6 @@
 	}
 
 	.close-wrapper:hover {
-		background-color: #1d2430;
+		background-color: #9090903c;
 	}
 </style>
