@@ -39,7 +39,7 @@
 	}
 
 	.markdown-editor__result-html pre {
-		white-space: normal;
+		white-space: pre-wrap;
 	}
 
 	.markdown-editor__result-html img {
@@ -78,3 +78,7 @@
         margin: 0;
         padding: 0;
     }
+
+	.markdown-editor__result-html strong {
+		font-weight: 600;
+	}

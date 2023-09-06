@@ -1,189 +1,94 @@
 <script lang="ts">
-	import '$lib/css/editor.css';
-	import '$lib/css/shades-of-purple.css';
-	import MarkdownIt from 'markdown-it';
-	import hljs from 'highlight.js';
-	import { afterUpdate, onMount } from 'svelte';
+	import '$lib/css/blocks.css';
+	import '$lib/css/katex.css';
 
-	const md = new MarkdownIt();
+	export let mdValue: string;
+	let blockValues: string[];
 
-	let markdown = '';
-	let result = '';
+	$: blockValues = mdValue.split('```');
 
-	let anchors = '';
-
-	let menu: HTMLElement;
-	let mdEditor: HTMLElement;
-
-	onMount(() => {
-		document.onclick = hideMenu;
-		// document.oncontextmenu = rightClick;
-		mdEditor.oncontextmenu = rightClick;
-
-		function hideMenu() {
-			menu.style.display = 'none';
-		}
-
-		function rightClick(e: any) {
-			e.preventDefault();
-			console.log('clicked');
-
-			if (menu.style.display == 'block') hideMenu();
-			else {
-				menu.style.display = 'block';
-				menu.style.left = e.pageX + 'px';
-				menu.style.top = e.pageY + 'px';
+	$: blockValues = splitBlocks(blockValues);
+	function splitBlocks(inputValue: string[]) {
+		let returnArray: string[] = [];
+		for (let i = 0; i < inputValue.length; i++) {
+			if (i % 2 != 0) {
+				returnArray = [...returnArray, ...inputValue[i].split('\n')];
+			} else {
+				returnArray = [...returnArray, inputValue[i]];
 			}
 		}
-	});
+		return returnArray;
+	}
 
-	afterUpdate(() => {
-		// result = sanitizeHtml(md.render(markdown), {
-		// 	allowedTags: sanitizeHtml.defaults.allowedTags.concat([ 'h1', 'h2', 'img' ])
-		// });
+	function writeMarkdown() {
+		mdValue = blockValues.join('\n');
+	}
 
-		let ree = markdown.replaceAll('\n', '\n[//s.#$]\n');
-		console.log(ree);
-
-		result = md.render(ree);
-		result = result.replaceAll(
-			'[//s.#$]',
-			'<div id="[//s.#$]" style="height:1px;margin-bottom: 1rem;"></div>',
-		);
-		const re = new RegExp(/<code>[\s\S]*?<\/code>/g);
-		const codes = result.matchAll(re);
-		for (let code of codes) {
-			let innerCode = code.toString().slice(6).slice(0, -7);
-			if (innerCode[-1] === ' ' || '\n') {
-				innerCode.slice(0, -1);
-			}
-			innerCode = innerCode.replaceAll('&quot;', '"');
-			innerCode = innerCode.replaceAll('&lt;', '<');
-			innerCode = innerCode.replaceAll('&gt;', '>');
-			innerCode = innerCode.replaceAll('&amp;', '&');
-			innerCode = innerCode.replaceAll(
-				'<div id="[//s.#$]" style="height:1px;margin-bottom: 1rem;"></div>',
-				'',
-			);
-			let outputCode = hljs.highlightAuto(innerCode).value.toString();
-			result = result.replace(code.toString(), outputCode);
+	function renderBlock(value: string) {
+		if (/> [\s\S]+?/g.test(value)) {
+			return 'block-blockquote';
 		}
-		const reId = result.matchAll(new RegExp(/<h[1-6]>[\s\S]*?{#\s?[\S]+?}<\/h[1-6]>/g));
-		for (let header of reId) {
-			let innerHead = header.toString().slice(4).slice(0, -5);
-			const idTag = innerHead
-				.match(new RegExp(/\{#\s?[\S]+?}/g))
-				?.toString()
-				.slice(2)
-				.slice(0, -1)
-				.trim();
-			const headerContent = innerHead.replace(new RegExp(/\{#\s?[\S]+?}/g), '');
-			const headerLvl = header.toString()[2];
-
-			const output = `<h${headerLvl} id="${idTag}">${headerContent}</h${headerLvl}>`;
-			console.log(innerHead);
-
-			result = result.replace(header.toString(), output);
-
-			// searchHeaders.push(idTag?.toString() ?? "")
+		if (/### [\s\S]+?/g.test(value)) {
+			return 'block-h3';
 		}
-
-		result = result.replaceAll('<pre>', "<pre class='hljs'>");
-		result = result.replaceAll(new RegExp(/<h[4-6]>/g), '<h3>');
-
-		const aTags = result.matchAll(new RegExp(/<a href=".*?">/g));
-		for (let anchor of aTags) {
-			let b = '';
-			b += anchor.toString().slice(0, -1);
-			b += ' target="_blank">';
-			anchors += b;
-			result = result.replace(anchor.toString(), b);
+		if (/## [\s\S]+?/g.test(value)) {
+			return 'block-h2';
 		}
-
-		const superScripts = result.matchAll(/\^[0-9]+?\^/g);
-		for (let sup of superScripts) {
-			let out = `<sup>${sup.toString().slice(1).slice(0, -1)}</sup>`;
-			result = result.replace(sup.toString(), out);
+		if (/# [\s\S]+?/g.test(value)) {
+			return 'block-h1';
 		}
-
-		const subScripts = result.matchAll(/~[0-9]+?~/g);
-		for (let sub of subScripts) {
-			let out = `<sub>${sub.toString().slice(1).slice(0, -1)}</sub>`;
-			result = result.replace(sub.toString(), out);
-		}
-	});
+	}
 </script>
 
-<div id="contextMenu" class="context-menu" style="display:none" bind:this={menu}>
-	<ul>
-		<li><a href="#">Element-1</a></li>
-		<li><a href="#">Element-2</a></li>
-		<li><a href="#">Element-3</a></li>
-		<li><a href="#">Element-4</a></li>
-		<li><a href="#">Element-5</a></li>
-		<li><a href="#">Element-6</a></li>
-		<li><a href="#">Element-7</a></li>
-	</ul>
-</div>
-
-<div class="markdown-editor">
-	<div class="markdown-editor__panel">
-		<span class="markdown-editor__panel__label">Markdown</span>
-		<textarea
-			class="markdown-editor__textarea"
-			bind:value={markdown}
-			bind:this={mdEditor}
-			on:keydown={(e) => {
-				if (e.key == 'Tab') {
-					e.preventDefault();
-					const area = e.currentTarget;
-					const start = area.selectionStart;
-					const end = area.selectionEnd;
-
-					area.value = area.value.substring(0, start) + '\t' + area.value.substring(end);
-
-					area.selectionStart = area.selectionEnd = start + 1;
+{#each blockValues as blockValue, i}
+	{i}
+	<div
+		class="block {renderBlock(blockValue)}"
+		id="block-{i}"
+		contenteditable="true"
+		on:keydown={(e) => {
+			if (e.key == 'Enter') {
+				e.preventDefault();
+				let p1 = blockValues.slice(0, i + 1);
+				let p2 = blockValues.slice(i + 1);
+				blockValues = [...p1, '', ...p2];
+				setTimeout(() => {
+					document.getElementById(`block-${i + 1}`)?.focus();
+				}, 1);
+			}
+			if (e.key == 'Backspace') {
+				if (blockValue == '' || blockValue == '\n') {
+					if (i != 0) {
+						e.preventDefault();
+						let p1 = blockValues.slice(0, i);
+						let p2 = blockValues.slice(i + 1);
+						blockValues = [...p1, ...p2];
+						setTimeout(() => {
+							document.getElementById(`block-${i - 1}`)?.focus();
+						}, 1);
+					}
 				}
-			}}
-		/>
+			}
+			if (e.key == 'ArrowDown') {
+				if (i != blockValues.length - 1) {
+					document.getElementById(`block-${i + 1}`)?.focus();
+				}
+			}
+			if (e.key == 'ArrowUp') {
+				if (i != 0) {
+					document.getElementById(`block-${i - 1}`)?.focus();
+				}
+			}
+			if (e.key == 'Tab') {
+				e.preventDefault();
+			}
+			setTimeout(() => {
+				blockValues[i] = document.getElementById(`block-${i}`)?.innerHTML ?? '';
+				console.log(blockValues[i]);
+			}, 1);
+			// writeMarkdown();
+		}}
+	>
+		{blockValue}
 	</div>
-	<div class="markdown-editor__panel">
-		<span class="markdown-editor__panel__label">Output</span>
-		<div class="markdown-editor__result-html">
-			<div>
-				{@html result}
-			</div>
-		</div>
-	</div>
-</div>
-
-<style>
-	.context-menu {
-		position: absolute;
-		text-align: center;
-		background: lightgray;
-		border: 1px solid black;
-	}
-
-	.context-menu ul {
-		padding: 0px;
-		margin: 0px;
-		min-width: 150px;
-		list-style: none;
-	}
-
-	.context-menu ul li {
-		padding-bottom: 7px;
-		padding-top: 7px;
-		border: 1px solid black;
-	}
-
-	.context-menu ul li a {
-		text-decoration: none;
-		color: black;
-	}
-
-	.context-menu ul li:hover {
-		background: darkgray;
-	}
-</style>
+{/each}

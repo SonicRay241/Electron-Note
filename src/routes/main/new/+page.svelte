@@ -28,7 +28,7 @@
 		window.setInterval(function () {
 			if (a.data != '') {
 				if (a.data != null) {
-					goto('/app');
+					goto('/main/app');
 				}
 			}
 		}, 200);

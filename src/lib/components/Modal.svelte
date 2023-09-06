@@ -10,6 +10,13 @@
 </script>
 
 {#if enabled}
+	<!-- svelte-ignore a11y-click-events-have-key-events -->
+	<!-- <div
+		class="out-bounds"
+		on:click={() => {
+			enabled = false;
+		}}
+	/> -->
 	<div class="modal-wrapper" transition:fade={{ duration: 300, easing: quadInOut }}>
 		<div class="modal" transition:fly={{ y: -80, duration: 300, easing: quadInOut }}>
 			<h4>{title}</h4>
@@ -39,6 +46,15 @@
 {/if}
 
 <style>
+	/* .out-bounds {
+		background-color: transparent;
+		position: fixed;
+		left: 0;
+		top: 0;
+		width: 100vw;
+		height: 100vh;
+		z-index: 5;
+	} */
 	.modal-wrapper {
 		display: flex;
 		position: fixed;

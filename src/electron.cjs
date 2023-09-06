@@ -28,37 +28,74 @@ function createWindow() {
 		defaultHeight: 600,
 	});
 
-	const mainWindow = new BrowserWindow({
-		autoHideMenuBar: true,
-		titleBarStyle: 'hidden',
-		vibrancy: 'under-window',
-		backgroundMaterial: 'acrylic',
-		visualEffectState: 'active',
-		titleBarOverlay: {
-			color: '#0d1117',
-			symbolColor: '#ac65ff',
-			height: 40
-		  },
-		trafficLightPosition: {
-			x: 15,
-			y: 15,
-		},
-		minHeight: 525,
-		minWidth: 700,
-		webPreferences: {
-			enableRemoteModule: true,
-			contextIsolation: true,
-			nodeIntegration: true,
-			spellcheck: false,
-			// devTools: dev,
-			preload: path.join(__dirname, 'preload.cjs'),
-			scrollBounce: true,
-		},
-		x: windowState.x,
-		y: windowState.y,
-		width: windowState.width,
-		height: windowState.height,
-	});
+	let mainWindow
+
+	if (process.platform == 'darwin') {
+		mainWindow = new BrowserWindow({
+			autoHideMenuBar: true,
+			titleBarStyle: 'hidden',
+			vibrancy: 'under-window',
+			backgroundMaterial: 'acrylic',
+			visualEffectState: 'active',
+			titleBarOverlay: {
+				color: '#0d1117',
+				symbolColor: '#ac65ff',
+				height: 40
+			  },
+			trafficLightPosition: {
+				x: 15,
+				y: 15,
+			},
+			minHeight: 525,
+			minWidth: 700,
+			webPreferences: {
+				enableRemoteModule: true,
+				contextIsolation: true,
+				nodeIntegration: true,
+				spellcheck: false,
+				webSecurity: false,
+				// devTools: dev,
+				preload: path.join(__dirname, 'preload.cjs'),
+				scrollBounce: true,
+			},
+			x: windowState.x,
+			y: windowState.y,
+			width: windowState.width,
+			height: windowState.height,
+		});
+	} else {
+		mainWindow = new BrowserWindow({
+			autoHideMenuBar: true,
+			titleBarStyle: 'hidden',
+			backgroundColor: '#303030',
+			visualEffectState: 'active',
+			titleBarOverlay: {
+				color: '#0d1117',
+				symbolColor: '#ac65ff',
+				height: 40
+			  },
+			trafficLightPosition: {
+				x: 15,
+				y: 15,
+			},
+			minHeight: 525,
+			minWidth: 700,
+			webPreferences: {
+				enableRemoteModule: true,
+				contextIsolation: true,
+				nodeIntegration: true,
+				spellcheck: false,
+				// devTools: dev,
+				preload: path.join(__dirname, 'preload.cjs'),
+				scrollBounce: true,
+			},
+			x: windowState.x,
+			y: windowState.y,
+			width: windowState.width,
+			height: windowState.height,
+		});
+	}
+
 
 	windowState.manage(mainWindow);
 
@@ -79,7 +116,7 @@ contextMenu({
 	showSearchWithGoogle: false,
 	showCopyImage: false,
 	showSelectAll:false,
-	showInspectElement: !dev,
+	showInspectElement: dev,
 	// prepend: (defaultActions, params, browserWindow) => [
 	// 	{
 	// 		label: 'Make App 💻',
@@ -216,16 +253,16 @@ ipcMain.on('readAppData', (event) => {
 })
 
 ipcMain.on('writeLibraryFile', (event, data) => {
-	if (fs.existsSync(appDataPath) || fs.existsSync(libraryDataPath)) {
+	if (fs.existsSync(appDataPath) && fs.existsSync(libraryDataPath)) {
 		fs.writeFile(libraryDataPath, JSON.stringify(data), (err) => {
 			if (err)
 			  console.log(err) 
 		})
 		readData()
 	}
-	else {
-		mainWindow.webContents.send('getData', { path: null, data: null })
-	}
+	// else {
+	// 	mainWindow.webContents.send('getData', { path: null, data: null })
+	// }
 })
 
 

@@ -75,6 +75,7 @@
 	.tab-wrapper {
 		display: flex;
 		padding-top: 5px;
+		white-space: nowrap;
 	}
 	.start-flipped {
 		height: 100%;

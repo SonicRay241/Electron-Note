@@ -5,16 +5,16 @@ module.exports = {
   },
   rebuildConfig: {},
   makers: [
-    {
-      name: '@electron-forge/maker-squirrel',
-      config: {
-        authors: '241',
-        description: 'A note taking app.'
-      },
-    },
+    // {
+    //   name: '@electron-forge/maker-squirrel',
+    //   config: {
+    //     authors: '241',
+    //     description: 'A note taking app.'
+    //   },
+    // },
     {
       name: '@electron-forge/maker-zip',
-      platforms: ['darwin'],
+      platforms: ['darwin', 'win32'],
       config: {
         name: 'Livre'
       }

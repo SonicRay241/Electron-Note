@@ -12,12 +12,20 @@
 	import { success, failed } from '$lib/notify';
 	import '$lib/css/editor.css';
 	import '$lib/css/katex.css';
-	import '$lib/css/shades-of-purple.css';
+	// import '$lib/css/shades-of-purple.css';
+	// import '$lib/css/tokyo-night-dark.css';
+	import '$lib/css/panda-syntax-dark.css';
+	import TableOfContents from '$lib/components/TableOfContents.svelte';
+	import Editor from '$lib/components/Editor.svelte';
+	import { jsPDF } from 'jspdf';
+	import NewEditor from '$lib/components/NewEditor.svelte';
+
+	let testingMode = false;
 
 	const emptyNote: Note = {
 		id: 'none',
 		images: {},
-		noteData: '# Welcome to Livre\n Please select or create a note from the sidebar',
+		noteData: '# Welcome to Livre\n\nPlease select or create a note from the sidebar',
 		title: 'Welcome',
 	};
 	let mainData: MainData;
@@ -37,8 +45,6 @@
 
 	let mdview: HTMLElement;
 	let editor: HTMLElement;
-	// let mdviewWidth;
-	// let editorWidth;
 
 	let showNewFolderModal = false;
 	let newFolderModalValue = 'New Folder';
@@ -145,7 +151,7 @@
 		mainData.data?.data[noteBookIndex!].notes.push({
 			id: generateUID(),
 			title: newNoteModalValue,
-			noteData: `# ${newNoteModalValue}`,
+			noteData: `# ${newNoteModalValue}\n---\n`,
 			images: [],
 		});
 		showNewNoteModal = false;
@@ -264,6 +270,8 @@
 			failed('what?');
 		}
 	};
+	let showTableOfContents = false;
+	let markdownOutput: HTMLElement;
 </script>
 
 <svelte:window
@@ -305,8 +313,10 @@
 				key: 's',
 				modifier: ['ctrl', 'meta'],
 				callback: () => {
-					window.electron.send('writeLibraryFile', mainData.data);
-					tabs = [...tabs];
+					if (tabs[currentTab].isEditing) {
+						window.electron.send('writeLibraryFile', mainData.data);
+						tabs = [...tabs];
+					} else failed('Not in edit mode!');
 				},
 			},
 			{
@@ -342,6 +352,31 @@
 					closeTab(currentTab);
 				},
 			},
+			{
+				key: 'j',
+				modifier: ['ctrl', 'meta'],
+				callback: () => {
+					if (tabs[currentTab].note == emptyNote) {
+						failed('Please select a note first');
+					} else {
+						if (showTableOfContents) {
+							showTableOfContents = false;
+						} else {
+							showTableOfContents = true;
+						}
+					}
+				},
+			},
+			{
+				key: 'd',
+				modifier: ['ctrl', 'meta'],
+				callback: () => {
+					if (!tabs[currentTab].isEditing && tabs[currentTab].note != emptyNote) {
+					} else {
+						failed('No note selected');
+					}
+				},
+			},
 		],
 	}}
 />
@@ -355,6 +390,11 @@
 		class="modal-input"
 		bind:value={newFolderModalValue}
 		bind:this={inputNameElement}
+		on:keydown={(e) => {
+			if (e.key == 'Enter') {
+				newFolder();
+			}
+		}}
 	/>
 </Modal>
 <!-- New Note -->
@@ -367,6 +407,11 @@
 		class="modal-input"
 		bind:value={newNoteModalValue}
 		bind:this={inputNoteNameElement}
+		on:keydown={(e) => {
+			if (e.key == 'Enter') {
+				newNote();
+			}
+		}}
 	/>
 </Modal>
 <!-- Rename -->
@@ -379,8 +424,14 @@
 		class="modal-input"
 		bind:value={renameModalValue}
 		bind:this={renameModalInputElement}
+		on:keydown={(e) => {
+			if (e.key == 'Enter') {
+				renameFunction();
+			}
+		}}
 	/>
 </Modal>
+<TableOfContents bind:enabled={showTableOfContents} length={1}>rekt</TableOfContents>
 {#if showContextMenu}
 	<div
 		id="contextMenu"
@@ -406,6 +457,9 @@
 					<Spacer space={3} draggable={true} />
 				{/if}
 				{#if sidebarBook}
+					{#if mainData.os != 'darwin'}
+						<Spacer space={2} />
+					{/if}
 					<!-- svelte-ignore a11y-click-events-have-key-events -->
 					<div class="backtofolders" on:click={hideSidebarNotes}>
 						<svg
@@ -571,17 +625,9 @@
 					</div>
 				</TabGroup>
 				<div class="editor">
-					<!-- {currentTab}
-					<div
-						class="a"
-						on:click={() => {
-							closeTab(currentTab);
-						}}
-					>
-						try to close this
-					</div> -->
 					{#if tabs[currentTab].isEditing}
 						{#if mainData.os == 'darwin'}
+							svelte-ignore a11y-click-events-have-key-events
 							<div class="centered-edit">Press Command + e to escape edit mode</div>
 						{:else}
 							<div class="centered-edit">Press Ctrl + e to escape edit mode</div>
@@ -608,7 +654,11 @@
 								}}
 							/>
 							{#if tabs[currentTab].preview}
-								<div class="editor-preview markdown-editor__result-html">
+								<div
+									class="editor-preview markdown-editor__result-html"
+									id="markdown-output"
+									bind:this={markdownOutput}
+								>
 									{@html renderMd(tabs[currentTab].note.noteData)}
 								</div>
 							{/if}
@@ -627,7 +677,8 @@
 							{@html renderMd(tabs[currentTab].note.noteData)}
 						</div>
 					{/if}
-					<!-- <a href="/app/note">e</a> -->
+					<!-- <NewEditor /> -->
+					<!-- <Editor bind:mdValue={tabs[currentTab].note.noteData} /> -->
 				</div>
 			</div>
 		</main>
@@ -678,7 +729,7 @@
 	}
 	.editor-flex {
 		display: flex;
-		height: calc(100% - 3rem);
+		height: calc(100% - 2rem);
 	}
 	.editor-textarea {
 		border: none;
@@ -687,7 +738,7 @@
 		height: 100%;
 		overflow-y: auto;
 		font-size: 14px;
-		/* background-color: red; */
+		background-color: transparent;
 	}
 	.editor-textarea:focus {
 		outline: none;
@@ -761,6 +812,7 @@
 	.add-button svg {
 		padding: 2px;
 		border-radius: 5px;
+		margin-right: 0.5rem;
 	}
 	.add-button:hover svg {
 		background-color: #9090903c;

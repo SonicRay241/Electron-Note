@@ -10,7 +10,7 @@
 			if (a.data != '') {
 				if (a.data == null) {
 					// postData('/app?/moveToNew', { data: 0 }, 'POST');
-					goto('/new');
+					goto('/main/new');
 				}
 			}
 		}, 200);

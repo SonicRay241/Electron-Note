@@ -1,0 +1,78 @@
+.cdx-block {
+    background-color: transparent;
+}
+
+.ce-inline-toolbar {
+    background-color: #303030;
+    border-color: #404040;
+}
+.ce-conversion-tool:hover {
+    background-color: #404040;
+    border: 0.5rem;
+}
+
+.ce-toolbar__plus {
+    color: white;
+}
+.ce-toolbar__settings-btn {
+    color: white;
+}
+.ce-toolbar__settings-btn:focus {
+    color: #404040;
+}
+
+.ce-conversion-tool__icon {
+    background-color: #303030;
+}
+
+.ce-popover {
+    border-color: #404040;
+    background-color: #303030;
+}
+
+.ce-popover-item {
+    color: white;
+}
+.ce-popover-item:hover {
+    background-color: #404040;
+}
+.ce-popover-item__icon {
+    background-color: #303030;
+}
+
+.cdx-search-field {
+    background-color: #404040;
+}
+
+.cdx-search-field__input {
+    color: white
+}
+
+.ce-conversion-tool-focused, 
+.ce-block--selected .ce-block__content > *, 
+.cdx-block::selection, 
+.ce-block::selection,
+.ce-popover__items .ce-popover-item:hover,
+.ce-toolbar__plus:hover, .ce-toolbar__settings-btn:hover,
+.ce-header::selection {
+    background-color: #ac65ff;
+}
+
+.ce-inline-toolbar__dropdown:hover {
+    background-color: #404040;
+    border-radius: 0.5rem 0 0 0.5rem;
+}
+
+.ce-conversion-toolbar {
+    background-color: #303030;
+    border-color: #404040;
+}
+
+.ce-inline-tool:hover {
+    background-color: #404040;
+    border-radius: 0.25rem;
+}
+
+.ce-inline-tool--active {
+    color: #ac65ff
+}

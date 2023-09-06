@@ -6,7 +6,7 @@
 	let width = 'width: calc(100vw - 12rem - 127px);';
 
 	if (os == 'darwin') {
-		width = 'width: calc(100vw - 12rem + 4px)';
+		width = 'width: calc(100vw - 12rem + 1rem)';
 	}
 </script>
 

@@ -1,10 +1,20 @@
 <script lang="ts">
-	import '@fontsource/montserrat';
+	// import '@fontsource/montserrat';
+	// import '@fontsource/montserrat/700.css';
+	// import '@fontsource/poppins';
+	// import '@fontsource/poppins/700.css';
+	// import '@fontsource/roboto';
+	// import '@fontsource/roboto/700.css';
+	// import '@fontsource/nunito-sans';
+	// import '@fontsource/nunito-sans/600.css';
+	// import '@fontsource/rubik';
+	// import '@fontsource/rubik/600.css';
+	import '@fontsource/open-sans';
+	import '@fontsource/open-sans/600.css';
+
 	import { onMount } from 'svelte';
 	import '$lib/css/app.css';
 	import { Toaster } from 'svelte-french-toast';
-	import { VERSION } from '@sveltejs/kit';
-	import { version } from '$app/environment';
 
 	onMount(() => {
 		window.electron.send('readAppData', null);
@@ -31,7 +41,7 @@
 	</div>
 {/key}
 <div class="dev-tag">
-	<p>ALPHA v0.0.1</p>
+	<p>ALPHA v0.0.2</p>
 </div>
 
 <style>
