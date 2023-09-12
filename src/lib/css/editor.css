@@ -38,6 +38,10 @@
 		margin: 0;
 	}
 
+	.markdown-editor__result-html h1, .markdown-editor__result-html h2, .markdown-editor__result-html h3{
+		margin-bottom: 0;
+	}
+
 	.markdown-editor__result-html pre {
 		white-space: pre-wrap;
 	}

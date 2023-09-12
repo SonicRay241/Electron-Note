@@ -5,7 +5,6 @@ import katex from 'katex'
 const md = new MarkdownIt();
 
 const renderMd = (markdown: string, customParser: boolean = true) => {
-	
 	let result = ''
     let anchors = ''
 	if (!customParser) {
@@ -128,7 +127,7 @@ const renderMd = (markdown: string, customParser: boolean = true) => {
 		let out = `<sub>${sub.toString().slice(1).slice(0, -1)}</sub>`;
 		result = result.replace(sub.toString(), out);
 	}
-	const mathStuff = result.matchAll(/\$[\s\S]+?\$/g);
+	const mathStuff = result.matchAll(/\$[ \S]+?\$/g);
 	for (let tex of mathStuff) {
 		let lestring = tex.toString()
 		lestring = lestring.replaceAll('&quot;', '"');
@@ -151,6 +150,12 @@ const renderMd = (markdown: string, customParser: boolean = true) => {
 		let text = underline.toString().slice(2).slice(0, -2)
 		result = result.replace(underline.toString(), `<u>${text}</u>`)
 	}
+	// const headerSpaceRe = new RegExp(/<h[1-3]>[\s ]+?<\/h[1-3]>\n<p>\n<br>\n<\/p>/g)
+	// const headerSpaces = result.matchAll(headerSpaceRe)
+	// for (let headerSpace of headerSpaces) {
+	// 	let outputString = headerSpace.toString().slice(0, -10)
+	// 	result = result.replace(headerSpace.toString(), outputString)
+	// }
     return result
 }
 

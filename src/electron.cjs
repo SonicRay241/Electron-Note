@@ -44,7 +44,7 @@ function createWindow() {
 			  },
 			trafficLightPosition: {
 				x: 15,
-				y: 15,
+				y: 13,
 			},
 			minHeight: 525,
 			minWidth: 700,
@@ -74,10 +74,6 @@ function createWindow() {
 				symbolColor: '#ac65ff',
 				height: 40
 			  },
-			trafficLightPosition: {
-				x: 15,
-				y: 15,
-			},
 			minHeight: 525,
 			minWidth: 700,
 			webPreferences: {
@@ -254,15 +250,20 @@ ipcMain.on('readAppData', (event) => {
 
 ipcMain.on('writeLibraryFile', (event, data) => {
 	if (fs.existsSync(appDataPath) && fs.existsSync(libraryDataPath)) {
-		fs.writeFile(libraryDataPath, JSON.stringify(data), (err) => {
-			if (err)
-			  console.log(err) 
+		const { content, read } = {content: data["content"], read: data["read"]}
+		fs.writeFile(libraryDataPath, JSON.stringify(content), (err) => {
+			if (err) {
+				console.log(err)
+			} else {
+				console.log('saved!')
+			}
+			setTimeout(()=>{
+				if (read) {
+					readData()
+				}
+			}, 500)
 		})
-		readData()
 	}
-	// else {
-	// 	mainWindow.webContents.send('getData', { path: null, data: null })
-	// }
 })
 
 

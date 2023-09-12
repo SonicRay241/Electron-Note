@@ -90,8 +90,15 @@
 		align-items: center;
 		gap: 0.5rem;
 	}
+	.flex svg {
+		min-width: 13.5px;
+		min-height: 15px;
+	}
 	.flex p {
 		font-size: 13px;
+		text-overflow: ellipsis;
+		overflow: hidden;
+		white-space: nowrap;
 	}
 	.flex:hover {
 		background-color: #a0a0a040;

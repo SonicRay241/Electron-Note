@@ -14,6 +14,13 @@ type Book = {
 
 type Library = {
     data: Book[]
+    // graphs: Graph[]
+}
+
+type Graph = {
+    id: string
+    name: string
+    data: string //json
 }
 
 type MainData = {

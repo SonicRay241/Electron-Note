@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { afterUpdate, onMount } from 'svelte';
 	import { shortcut, type ShortcutEventDetail } from '@svelte-put/shortcut';
 	import type { Library, MainData, Book, Note } from '$lib/dataType';
 	import Spacer from '$lib/components/Spacer.svelte';
@@ -20,12 +20,10 @@
 	import { jsPDF } from 'jspdf';
 	import NewEditor from '$lib/components/NewEditor.svelte';
 
-	let testingMode = false;
-
 	const emptyNote: Note = {
 		id: 'none',
 		images: {},
-		noteData: '# Welcome to Livre\n\nPlease select or create a note from the sidebar',
+		noteData: '# Welcome to Livre\nPlease select or create a note from the sidebar',
 		title: 'Welcome',
 	};
 	let mainData: MainData;
@@ -71,6 +69,15 @@
 	let showContextMenu = false;
 
 	onMount(() => {
+		// isFullscreen = () => {
+		// 	if (!document.fullscreenElement) {
+		// 		return false;
+		// 	}
+		// 	return true;
+		// };
+		isFullscreen =
+			document.fullscreenElement != null ||
+			(window.innerHeight >= screen.availHeight && window.innerWidth >= screen.availWidth);
 		window.electron.receive('getData', (data: any) => {
 			mainData = data;
 			console.log('got them data');
@@ -80,6 +87,12 @@
 				location.reload();
 			}
 		}, 500);
+		window.addEventListener('resize', () => {
+			isFullscreen =
+				document.fullscreenElement != null ||
+				(window.innerHeight >= screen.availHeight &&
+					window.innerWidth >= screen.availWidth);
+		});
 
 		// fetch('https://api.github.com/repos/microsoft/vscode/releases/latest', {}).then((value) => {
 		// 	value.json().then((a) => {
@@ -90,6 +103,14 @@
 		// mdviewWidth = mdview.clientWidth;
 		// editorWidth = editor.clientWidth;
 	});
+
+	// afterUpdate(() => {
+	// 	isFullscreen = document.fullscreenElement != null;
+	// });
+
+	let isFullscreen: boolean;
+
+	$: isFullscreen;
 
 	const closeTab = (i: number) => {
 		tabs.splice(i, 1);
@@ -142,7 +163,7 @@
 		});
 		showNewFolderModal = false;
 		newFolderModalValue = 'New Folder';
-		window.electron.send('writeLibraryFile', mainData.data);
+		window.electron.send('writeLibraryFile', { content: mainData.data, read: true });
 	};
 
 	let inputNoteNameElement: HTMLElement;
@@ -156,7 +177,7 @@
 		});
 		showNewNoteModal = false;
 		newNoteModalValue = 'New Note';
-		window.electron.send('writeLibraryFile', mainData.data);
+		window.electron.send('writeLibraryFile', { content: mainData.data, read: true });
 		if (newTabOnNoteCreation) {
 			setTimeout(() => {
 				tabs = [
@@ -219,7 +240,7 @@
 		} else {
 			mainData.data?.data.splice(contextMenuIndex, 1);
 		}
-		window.electron.send('writeLibraryFile', mainData.data);
+		window.electron.send('writeLibraryFile', { content: mainData.data, read: true });
 	};
 	let renameModalInputElement: HTMLElement;
 	const contextMenuRename = () => {
@@ -242,7 +263,7 @@
 		}
 		showRenameModal = false;
 		renameModalValue = '';
-		window.electron.send('writeLibraryFile', mainData.data);
+		window.electron.send('writeLibraryFile', { content: mainData.data, read: true });
 	};
 	const contextMenuOpen = () => {
 		if (sidebarBook) {
@@ -272,6 +293,12 @@
 	};
 	let showTableOfContents = false;
 	let markdownOutput: HTMLElement;
+	const sidebarContentColor = () => {
+		if (mainData.os == 'darwin') {
+			return 'border-top: 1px solid #505050;';
+		}
+		return '';
+	};
 </script>
 
 <svelte:window
@@ -293,7 +320,10 @@
 						failed('Please select a note to edit');
 					} else {
 						setTimeout(() => {
-							window.electron.send('writeLibraryFile', mainData.data);
+							window.electron.send('writeLibraryFile', {
+								content: mainData.data,
+								read: false,
+							});
 						}, 50);
 					}
 				},
@@ -314,9 +344,12 @@
 				modifier: ['ctrl', 'meta'],
 				callback: () => {
 					if (tabs[currentTab].isEditing) {
-						window.electron.send('writeLibraryFile', mainData.data);
+						window.electron.send('writeLibraryFile', {
+							content: mainData.data,
+							read: false,
+						});
 						tabs = [...tabs];
-					} else failed('Not in edit mode!');
+					} else failed('You are not currently editing anything!');
 				},
 			},
 			{
@@ -454,131 +487,135 @@
 		<main class="main-wrapper">
 			<div class="sidebar" bind:this={mdview}>
 				{#if mainData.os == 'darwin'}
-					<Spacer space={3} draggable={true} />
+					<Spacer space={2} draggable={true} />
 				{/if}
-				{#if sidebarBook}
-					{#if mainData.os != 'darwin'}
-						<Spacer space={2} />
+				<div class="sidebar-content" style={sidebarContentColor()}>
+					{#if sidebarBook}
+						{#if mainData.os != 'darwin'}
+							<Spacer space={2} />
+						{/if}
+						<Spacer space={1} />
+						<!-- svelte-ignore a11y-click-events-have-key-events -->
+						<div class="backtofolders" on:click={hideSidebarNotes}>
+							<svg
+								width="23"
+								height="23"
+								viewBox="0 0 129 129"
+								fill="none"
+								xmlns="http://www.w3.org/2000/svg"
+								style="transform: rotate(180deg)"
+							>
+								<path
+									d="M53.55 101.745C52.2988 101.747 51.0863 101.312 50.1228 100.513C49.5806 100.064 49.1324 99.5117 48.8038 98.8887C48.4753 98.2657 48.2729 97.5839 48.2082 96.8825C48.1436 96.1812 48.2179 95.4739 48.427 94.8013C48.6361 94.1287 48.9758 93.504 49.4267 92.9628L73.4171 64.26L50.2835 35.5037C49.8387 34.9559 49.5065 34.3257 49.306 33.6491C49.1056 32.9726 49.0408 32.2631 49.1155 31.5614C49.1901 30.8598 49.4027 30.1798 49.741 29.5606C50.0793 28.9413 50.5366 28.395 51.0867 27.9531C51.6408 27.4656 52.2896 27.0979 52.9925 26.8731C53.6955 26.6482 54.4373 26.5711 55.1714 26.6465C55.9055 26.7219 56.6161 26.9483 57.2586 27.3114C57.9012 27.6744 58.4617 28.1664 58.905 28.7564L84.7697 60.8864C85.5573 61.8446 85.9879 63.0465 85.9879 64.2868C85.9879 65.5272 85.5573 66.7291 84.7697 67.6872L57.9947 99.8172C57.4575 100.465 56.7751 100.978 56.0028 101.313C55.2306 101.647 54.3903 101.796 53.55 101.745Z"
+									fill="#ac65ff"
+								/>
+							</svg>
+							<p>Back</p>
+						</div>
+						<!-- <div class="folder-name">{sidebarBook.name}</div> -->
+						{#each sidebarBook.notes as note, i}
+							<BookCover
+								title={note.title}
+								note={true}
+								clickFunction={() => {
+									if (sidebarBook) {
+										selectCurrentNote(sidebarBook, i);
+									}
+								}}
+								rightClickFunction={(e) => {
+									e.preventDefault();
+									contextMenuX = e.pageX;
+									contextMenuY = e.pageY;
+									showContextMenuFunction(i);
+								}}
+							/>
+						{/each}
+						<!-- svelte-ignore a11y-click-events-have-key-events -->
+						<div
+							class="new-folder"
+							on:click={() => {
+								showNewNoteModal = true;
+								setTimeout(() => {
+									inputNoteNameElement.focus();
+								}, 250);
+							}}
+						>
+							<svg
+								width="14"
+								height="14"
+								viewBox="0 0 59 59"
+								fill="none"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<path
+									d="M29.2079 16.104V42.3119M16.1039 29.2079H42.3118"
+									stroke="#a0a0a0"
+									stroke-width="5.24158"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								/>
+								<path
+									d="M29.2079 55.4158C43.6821 55.4158 55.4158 43.6821 55.4158 29.2079C55.4158 14.7337 43.6821 3 29.2079 3C14.7337 3 3 14.7337 3 29.2079C3 43.6821 14.7337 55.4158 29.2079 55.4158Z"
+									stroke="#a0a0a0"
+									stroke-width="5.24158"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								/>
+							</svg>
+							<p>New Note</p>
+						</div>
+					{:else}
+						{#each mainData.data.data as book, i}
+							<BookCover
+								title={book.name}
+								color={book.color}
+								clickFunction={() => {
+									showSidebarNotes(i);
+								}}
+								rightClickFunction={(e) => {
+									e.preventDefault();
+									contextMenuX = e.pageX;
+									contextMenuY = e.pageY;
+									showContextMenuFunction(i);
+								}}
+							/>
+						{/each}
+						<!-- svelte-ignore a11y-click-events-have-key-events -->
+						<div
+							class="new-folder"
+							on:click={() => {
+								showNewFolderModal = true;
+								setTimeout(() => {
+									inputNameElement.focus();
+								}, 250);
+							}}
+						>
+							<svg
+								width="14"
+								height="14"
+								viewBox="0 0 59 59"
+								fill="none"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<path
+									d="M29.2079 16.104V42.3119M16.1039 29.2079H42.3118"
+									stroke="#a0a0a0"
+									stroke-width="5.24158"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								/>
+								<path
+									d="M29.2079 55.4158C43.6821 55.4158 55.4158 43.6821 55.4158 29.2079C55.4158 14.7337 43.6821 3 29.2079 3C14.7337 3 3 14.7337 3 29.2079C3 43.6821 14.7337 55.4158 29.2079 55.4158Z"
+									stroke="#a0a0a0"
+									stroke-width="5.24158"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								/>
+							</svg>
+							<p>New Folder</p>
+						</div>
 					{/if}
-					<!-- svelte-ignore a11y-click-events-have-key-events -->
-					<div class="backtofolders" on:click={hideSidebarNotes}>
-						<svg
-							width="23"
-							height="23"
-							viewBox="0 0 129 129"
-							fill="none"
-							xmlns="http://www.w3.org/2000/svg"
-							style="transform: rotate(180deg)"
-						>
-							<path
-								d="M53.55 101.745C52.2988 101.747 51.0863 101.312 50.1228 100.513C49.5806 100.064 49.1324 99.5117 48.8038 98.8887C48.4753 98.2657 48.2729 97.5839 48.2082 96.8825C48.1436 96.1812 48.2179 95.4739 48.427 94.8013C48.6361 94.1287 48.9758 93.504 49.4267 92.9628L73.4171 64.26L50.2835 35.5037C49.8387 34.9559 49.5065 34.3257 49.306 33.6491C49.1056 32.9726 49.0408 32.2631 49.1155 31.5614C49.1901 30.8598 49.4027 30.1798 49.741 29.5606C50.0793 28.9413 50.5366 28.395 51.0867 27.9531C51.6408 27.4656 52.2896 27.0979 52.9925 26.8731C53.6955 26.6482 54.4373 26.5711 55.1714 26.6465C55.9055 26.7219 56.6161 26.9483 57.2586 27.3114C57.9012 27.6744 58.4617 28.1664 58.905 28.7564L84.7697 60.8864C85.5573 61.8446 85.9879 63.0465 85.9879 64.2868C85.9879 65.5272 85.5573 66.7291 84.7697 67.6872L57.9947 99.8172C57.4575 100.465 56.7751 100.978 56.0028 101.313C55.2306 101.647 54.3903 101.796 53.55 101.745Z"
-								fill="#ac65ff"
-							/>
-						</svg>
-						<p>Back</p>
-					</div>
-					{#each sidebarBook.notes as note, i}
-						<BookCover
-							title={note.title}
-							note={true}
-							clickFunction={() => {
-								if (sidebarBook) {
-									selectCurrentNote(sidebarBook, i);
-								}
-							}}
-							rightClickFunction={(e) => {
-								e.preventDefault();
-								contextMenuX = e.pageX;
-								contextMenuY = e.pageY;
-								showContextMenuFunction(i);
-							}}
-						/>
-					{/each}
-					<!-- svelte-ignore a11y-click-events-have-key-events -->
-					<div
-						class="new-folder"
-						on:click={() => {
-							showNewNoteModal = true;
-							setTimeout(() => {
-								inputNoteNameElement.focus();
-							}, 250);
-						}}
-					>
-						<svg
-							width="14"
-							height="14"
-							viewBox="0 0 59 59"
-							fill="none"
-							xmlns="http://www.w3.org/2000/svg"
-						>
-							<path
-								d="M29.2079 16.104V42.3119M16.1039 29.2079H42.3118"
-								stroke="#a0a0a0"
-								stroke-width="5.24158"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							/>
-							<path
-								d="M29.2079 55.4158C43.6821 55.4158 55.4158 43.6821 55.4158 29.2079C55.4158 14.7337 43.6821 3 29.2079 3C14.7337 3 3 14.7337 3 29.2079C3 43.6821 14.7337 55.4158 29.2079 55.4158Z"
-								stroke="#a0a0a0"
-								stroke-width="5.24158"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							/>
-						</svg>
-						<p>New Note</p>
-					</div>
-				{:else}
-					{#each mainData.data.data as book, i}
-						<BookCover
-							title={book.name}
-							color={book.color}
-							clickFunction={() => {
-								showSidebarNotes(i);
-							}}
-							rightClickFunction={(e) => {
-								e.preventDefault();
-								contextMenuX = e.pageX;
-								contextMenuY = e.pageY;
-								showContextMenuFunction(i);
-							}}
-						/>
-					{/each}
-					<!-- svelte-ignore a11y-click-events-have-key-events -->
-					<div
-						class="new-folder"
-						on:click={() => {
-							showNewFolderModal = true;
-							setTimeout(() => {
-								inputNameElement.focus();
-							}, 250);
-						}}
-					>
-						<svg
-							width="14"
-							height="14"
-							viewBox="0 0 59 59"
-							fill="none"
-							xmlns="http://www.w3.org/2000/svg"
-						>
-							<path
-								d="M29.2079 16.104V42.3119M16.1039 29.2079H42.3118"
-								stroke="#a0a0a0"
-								stroke-width="5.24158"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							/>
-							<path
-								d="M29.2079 55.4158C43.6821 55.4158 55.4158 43.6821 55.4158 29.2079C55.4158 14.7337 43.6821 3 29.2079 3C14.7337 3 3 14.7337 3 29.2079C3 43.6821 14.7337 55.4158 29.2079 55.4158Z"
-								stroke="#a0a0a0"
-								stroke-width="5.24158"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							/>
-						</svg>
-						<p>New Folder</p>
-					</div>
-				{/if}
+				</div>
 			</div>
 			<!-- <div class="resizer" on:mousedown={onResizer1Drag} /> -->
 			<div class="md-view" bind:this={editor}>
@@ -627,7 +664,7 @@
 				<div class="editor">
 					{#if tabs[currentTab].isEditing}
 						{#if mainData.os == 'darwin'}
-							svelte-ignore a11y-click-events-have-key-events
+							<!-- svelte-ignore a11y-click-events-have-key-events -->
 							<div class="centered-edit">Press Command + e to escape edit mode</div>
 						{:else}
 							<div class="centered-edit">Press Ctrl + e to escape edit mode</div>
@@ -675,6 +712,7 @@
 						{/if}
 						<div class="markdown-editor__result-html">
 							{@html renderMd(tabs[currentTab].note.noteData)}
+							<!-- {isFullscreen} -->
 						</div>
 					{/if}
 					<!-- <NewEditor /> -->
@@ -686,6 +724,9 @@
 {/if}
 
 <style>
+	.sidebar-content {
+		padding: 0.5rem;
+	}
 	.context-menu {
 		position: absolute;
 		border: 1px solid #676767;
@@ -729,6 +770,7 @@
 	}
 	.editor-flex {
 		display: flex;
+		gap: 0.5rem;
 		height: calc(100% - 2rem);
 	}
 	.editor-textarea {
@@ -790,7 +832,8 @@
 		align-items: center;
 	}
 
-	.new-folder p {
+	.new-folder p,
+	.folder-name {
 		font-size: 12.5px;
 		font-weight: 600;
 		color: #a0a0a0;
@@ -833,11 +876,12 @@
 	}
 	.sidebar {
 		width: 12rem;
-		padding: 0.5rem;
+		max-width: 12rem;
+		padding-top: 0.5rem;
 		height: 100%;
 	}
 	.md-view {
 		width: 100%;
-		border-left: 1px solid #3f3f3f;
+		border-left: 1px solid #505050;
 	}
 </style>

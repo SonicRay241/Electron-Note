@@ -41,7 +41,7 @@
 	</div>
 {/key}
 <div class="dev-tag">
-	<p>ALPHA v0.0.2</p>
+	<p>ALPHA v0.0.3</p>
 </div>
 
 <style>
